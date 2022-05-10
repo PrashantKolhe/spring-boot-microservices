@@ -9,9 +9,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class CatalogItem {
-
+public class Movie {
     String name;
     String desc;
-    int rating;
 }
