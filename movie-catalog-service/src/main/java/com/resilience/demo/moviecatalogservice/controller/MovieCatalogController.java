@@ -30,12 +30,12 @@ public class MovieCatalogController {
     public List<CatalogItem> getCatalog(@PathVariable("userId") String userId){
 
         //Retrieve User Rating
-        UserRating ratings=  restTemplate.getForObject("http://localhost:8082/ratingsdata/users/"+userId, UserRating.class);
+        UserRating ratings=  restTemplate.getForObject("http://MOVIE-RATING-SERVICE/ratingsdata/users/"+userId, UserRating.class);
 
         return ratings.getRatingList().stream().map(rating -> {
             //Retrieve Movie
             //Rest Template Way
-            Movie movie= restTemplate.getForObject("http://localhost:8081/movies/"+rating.getMovieId(), Movie.class);
+            Movie movie= restTemplate.getForObject("http://MOVIE-INFO-SERVICE/movies/"+rating.getMovieId(), Movie.class);
 
             //Web Client Way
             //Movie movie=webClientBuilder.build().get().uri("http://localhost:8081/movies/"+rating.getMovieId()).retrieve().bodyToMono(Movie.class).block();
