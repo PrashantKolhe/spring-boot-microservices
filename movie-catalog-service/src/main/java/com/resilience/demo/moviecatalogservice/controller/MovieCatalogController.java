@@ -1,8 +1,11 @@
 package com.resilience.demo.moviecatalogservice.controller;
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.resilience.demo.moviecatalogservice.models.Movie;
 import com.resilience.demo.moviecatalogservice.models.Rating;
 import com.resilience.demo.moviecatalogservice.models.UserRating;
+import com.resilience.demo.moviecatalogservice.service.MovieInfo;
+import com.resilience.demo.moviecatalogservice.service.UserRatingInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,23 +27,19 @@ public class MovieCatalogController {
     private RestTemplate restTemplate;
 
     @Autowired
-    private WebClient.Builder webClientBuilder;
+    MovieInfo movieInfo;
+
+    @Autowired
+    UserRatingInfo userRatingInfo;
 
     @RequestMapping("/{userId}")
     public List<CatalogItem> getCatalog(@PathVariable("userId") String userId){
 
         //Retrieve User Rating
-        UserRating ratings=  restTemplate.getForObject("http://MOVIE-RATING-SERVICE/ratingsdata/users/"+userId, UserRating.class);
+        UserRating ratings= userRatingInfo.getUserRating(userId);
 
-        return ratings.getRatingList().stream().map(rating -> {
-            //Retrieve Movie
-            //Rest Template Way
-            Movie movie= restTemplate.getForObject("http://MOVIE-INFO-SERVICE/movies/"+rating.getMovieId(), Movie.class);
-
-            //Web Client Way
-            //Movie movie=webClientBuilder.build().get().uri("http://localhost:8081/movies/"+rating.getMovieId()).retrieve().bodyToMono(Movie.class).block();
-            return new CatalogItem(movie.getName(),"Desc",rating.getRating());
-        })
+        return ratings.getRatings().stream().map(
+                rating -> movieInfo.getCatalogItem(rating))
          .collect(Collectors.toList());
     }
 }
